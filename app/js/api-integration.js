@@ -57,7 +57,7 @@ function setupRegistrationForm() {
         
         console.log('📝 Skjema sendt - håndterer via API');
         
-        // Samle inn skjemadata
+        // Samle inn skjemadata direkte fra feltene
         const formData = {
             patientId: document.getElementById('patientId').value,
             patientAge: parseInt(document.getElementById('patientAge').value),
@@ -74,6 +74,14 @@ function setupRegistrationForm() {
             autopsyPerformed: document.getElementById('autopsyPerformed').value,
             additionalInfo: document.getElementById('additionalInfo').value
         };
+        
+        // Valider viktige felt
+        if (!formData.patientId || !formData.patientGender || !formData.deathDate || 
+            !formData.primaryCauseCode || !formData.deathContext) {
+            showAlert('Vennligst fyll ut alle påkrevde felt', 'error');
+            console.error('Validering feilet: Mangler påkrevde felt', formData);
+            return;
+        }
         
         console.log('Sender følgende data til API:', formData);
         
@@ -92,8 +100,8 @@ function setupRegistrationForm() {
             if (data.success) {
                 showAlert(`Registrering lagret med ID: ${data.recordId}`, 'success');
                 
-                // Fjern formularet etter vellykket lagring hvis ønskelig
-                // form.reset();
+                // Nullstill skjemaet
+                form.reset();
                 
                 // Oppdater registreringslisten hvis den vises
                 if (document.getElementById('recordsTable')) {
