@@ -1,0 +1,10 @@
+# For å løse favicon-problemet, last ned en standard favicon.ico og legg den i app-mappen din
+
+# På Linux/macOS:
+curl -o app/favicon.ico https://www.google.com/favicon.ico
+
+# På Windows med PowerShell:
+Invoke-WebRequest -Uri "https://www.google.com/favicon.ico" -OutFile "app\favicon.ico"
+
+# Alternativt kan du kopiere en eksisterende favicon.ico-fil til app-mappen
+# eller opprette et 16x16 pixel bilde og lagre det som favicon.ico
