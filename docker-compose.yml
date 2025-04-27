@@ -1,0 +1,64 @@
+services:
+  # Webserver for applikasjonen
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: mortalitet-web
+    ports:
+      - "3011:80"
+    volumes:
+      - ./app:/var/www/html
+    depends_on:
+      - db
+    environment:
+      - DB_HOST=db
+      - DB_NAME=mortalitet
+      - DB_USER=mortalitetbruker
+      - DB_PASS=mortalitetpassord
+    networks:
+      - mortalitetnettverk
+    restart: unless-stopped
+
+  # Database server
+  db:
+    image: mysql:8.0
+    container_name: mortalitet-db
+    ports:
+      - "13306:3306"  # Endret fra 3306:3306 til 13306:3306
+    volumes:
+      - ./db-data:/var/lib/mysql
+      - ./database-schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    environment:
+      - MYSQL_ROOT_PASSWORD=rotpassord
+      - MYSQL_DATABASE=mortalitet
+      - MYSQL_USER=mortalitetbruker
+      - MYSQL_PASSWORD=mortalitetpassord
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - mortalitetnettverk
+    restart: unless-stopped
+
+  # phpMyAdmin for databaseadministrasjon
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: mortalitet-phpmyadmin
+    ports:
+      - "3012:80"
+    environment:
+      - PMA_HOST=db
+      - PMA_PORT=3306
+      - MYSQL_ROOT_PASSWORD=rotpassord
+    depends_on:
+      - db
+    networks:
+      - mortalitetnettverk
+    restart: unless-stopped
+
+networks:
+  mortalitetnettverk:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local

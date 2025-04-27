@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dødsårsaksregisteret</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Dødsårsaksregisteret</div>
+            <nav>
+                <ul>
+                    <li><a href="#" class="nav-link" data-target="register">Registrering</a></li>
+                    <li><a href="#" class="nav-link" data-target="visualize">Visualisering</a></li>
+                    <li><a href="#" class="nav-link" data-target="export">Eksport</a></li>
+                    <li><a href="#" class="nav-link" data-target="contact">Kontakt</a></li>
+                    <li><a href="#" id="loginLink">Logg inn</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="alerts" class="alerts-container"></div>
+
+        <!-- Login Modal -->
+        <div class="modal-backdrop" id="loginModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">Logg inn</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="username">Brukernavn</label>
+                            <input type="text" id="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Passord</label>
+                            <input type="password" id="password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Rolle</label>
+                            <select id="role">
+                                <option value="user">Bruker</option>
+                                <option value="admin">Administrator</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary modal-close-btn">Avbryt</button>
+                    <button class="btn" id="loginButton">Logg inn</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ICD-kode Søk Modal -->
+        <div class="modal-backdrop" id="icdSearchModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title">Søk ICD-kode</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="icdSearchInput">Søk etter sykdom eller kode</label>
+                        <input type="text" id="icdSearchInput" placeholder="F.eks. 'hjerteinfarkt' eller 'I21'">
+                    </div>
+                    <div class="loader" id="icdSearchLoader"></div>
+                    <div id="icdSearchResults"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary modal-close-btn">Lukk</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seksjoner for ulike funksjoner -->
+        <section id="registerSection" class="tab-content active">
+            <h1>Registrering av dødsårsak</h1>
+            <p>Fyll ut skjemaet nedenfor for å registrere en dødsårsak i henhold til ICD-kodesystemet.</p>
+            
+            <div class="card">
+                <form id="mortForm">
+                    <div class="form-group">
+                        <h2>Demografiske data</h2>
+                        <div class="input-group">
+                            <div class="form-group">
+                                <label for="patientId">Pasient ID</label>
+                                <input type="text" id="patientId" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientAge">Alder</label>
+                                <input type="number" id="patientAge" min="0" max="120" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientGender">Kjønn</label>
+                                <select id="patientGender" required>
+                                    <option value="">Velg</option>
+                                    <option value="male">Mann</option>
+                                    <option value="female">Kvinne</option>
+                                    <option value="other">Annet</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="patientResidence">Bosted (kommune)</label>
+                            <input type="text" id="patientResidence" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <h2>Dødsårsaker</h2>
+                        <div class="form-group">
+                            <label for="deathDate">Dødsdato</label>
+                            <input type="date" id="deathDate" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="primaryCauseDesc">Primær dødsårsak (beskrivelse)</label>
+                            <textarea id="primaryCauseDesc" placeholder="Beskriv den direkte årsaken til død" required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="primaryCauseCode">ICD-kode for primær dødsårsak</label>
+                            <div class="input-group">
+                                <input type="text" id="primaryCauseCode" placeholder="F.eks. I21.0" required>
+                                <button type="button" class="btn" data-target="primaryCauseCode" id="searchPrimaryCodeBtn">Søk kode</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="secondaryCauseDesc">Sekundære dødsårsaker (beskrivelse)</label>
+                            <textarea id="secondaryCauseDesc" placeholder="Beskriv eventuelle medvirkende årsaker til død"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="secondaryCauseCodes">ICD-koder for sekundære dødsårsaker</label>
+                            <div class="input-group">
+                                <input type="text" id="secondaryCauseCodes" placeholder="F.eks. E11.9, I10">
+                                <button type="button" class="btn" data-target="secondaryCauseCodes" id="searchSecondaryCodeBtn">Søk kode</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="underlyingCauseDesc">Underliggende dødsårsaker (beskrivelse)</label>
+                            <textarea id="underlyingCauseDesc" placeholder="Beskriv eventuelle underliggende årsaker som førte til den primære dødsårsaken"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="underlyingCauseCodes">ICD-koder for underliggende dødsårsaker</label>
+                            <div class="input-group">
+                                <input type="text" id="underlyingCauseCodes" placeholder="F.eks. C34.9, F10.2">
+                                <button type="button" class="btn" data-target="underlyingCauseCodes" id="searchUnderlyingCodeBtn">Søk kode</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <h2>Tilleggsinformasjon</h2>
+                        <div class="form-group">
+                            <label for="deathContext">Dødssammenheng</label>
+                            <select id="deathContext" required>
+                                <option value="">Velg</option>
+                                <option value="natural">Naturlig død</option>
+                                <option value="accident">Ulykke</option>
+                                <option value="suicide">Selvmord</option>
+                                <option value="homicide">Drap</option>
+                                <option value="unknown">Ukjent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="autopsyPerformed">Obduksjon utført</label>
+                            <select id="autopsyPerformed">
+                                <option value="no">Nei</option>
+                                <option value="yes">Ja</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="additionalInfo">Tilleggskommentarer</label>
+                            <textarea id="additionalInfo" placeholder="Skriv inn eventuelle tilleggsopplysninger"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success" id="saveBtn">Lagre registrering</button>
+                        <button type="reset" class="btn btn-secondary">Nullstill skjema</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <section id="visualizeSection" class="tab-content">
+            <h1>Visualisering av dødsårsaksdata</h1>
+            <p>Se statistikk og trender basert på registrerte dødsårsaker.</p>
+            
+            <div class="visualization-toolbar">
+                <div>
+                    <label for="vizTimeRange">Tidsperiode:</label>
+                    <select id="vizTimeRange">
+                        <option value="last30days">Siste 30 dager</option>
+                        <option value="last6months">Siste 6 måneder</option>
+                        <option value="last12months" selected>Siste 12 måneder</option>
+                        <option value="alltime">All tid</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="vizChartType">Visningstype:</label>
+                    <select id="vizChartType">
+                        <option value="bar">Søylediagram</option>
+                        <option value="pie">Kakediagram</option>
+                        <option value="line">Linjediagram</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="vizCategory">Kategorisering:</label>
+                    <select id="vizCategory">
+                        <option value="icdChapter">ICD-kapittel</option>
+                        <option value="causeType">Årsakstype</option>
+                        <option value="age">Aldersgruppe</option>
+                        <option value="gender">Kjønn</option>
+                    </select>
+                </div>
+                <button class="btn" id="updateVizBtn">Oppdater</button>
+            </div>
+            
+            <div class="loader" id="vizLoader"></div>
+            
+            <div class="visualization-container">
+                <div class="chart-container" id="chartContainer">
+                    <!-- Canvas for chart will be inserted here by JS -->
+                </div>
+                <div class="chart-legend" id="chartLegend">
+                    <!-- Legend items will be inserted here by JS -->
+                </div>
+            </div>
+            
+            <h2>Oversiktstabell</h2>
+            <table id="statsTable">
+                <thead>
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Antall</th>
+                        <th>Prosent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table data will be inserted here by JS -->
+                </tbody>
+            </table>
+        </section>
+
+        <section id="exportSection" class="tab-content">
+            <h1>Eksporter data</h1>
+            <p>Eksporter data fra dødsårsaksregisteret for videre analyser eller rapportering.</p>
+            
+            <div class="card">
+                <h2>Filtrer data for eksport</h2>
+                <form id="exportForm">
+                    <div class="input-group">
+                        <div class="form-group">
+                            <label for="exportFromDate">Fra dato</label>
+                            <input type="date" id="exportFromDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="exportToDate">Til dato</label>
+                            <input type="date" id="exportToDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="exportIcdCategory">ICD-kategori (valgfritt)</label>
+                        <input type="text" id="exportIcdCategory" placeholder="F.eks. I (hjerte-karsykdommer)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="exportFormat">Eksportformat</label>
+                        <select id="exportFormat">
+                            <option value="csv">CSV</option>
+                            <option value="json">JSON</option>
+                            <option value="excel">Excel</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="exportFields">Felter som skal inkluderes</label>
+                        <div>
+                            <input type="checkbox" id="exportDemographics" checked>
+                            <label for="exportDemographics">Demografiske data</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="exportPrimaryCause" checked>
+                            <label for="exportPrimaryCause">Primær dødsårsak</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="exportSecondaryCauses" checked>
+                            <label for="exportSecondaryCauses">Sekundære dødsårsaker</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="exportUnderlyingCauses" checked>
+                            <label for="exportUnderlyingCauses">Underliggende dødsårsaker</label>
+                        </div>
+                        <div>
+                            <input type="checkbox" id="exportAdditionalInfo">
+                            <label for="exportAdditionalInfo">Tilleggsinformasjon</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="button" class="btn" id="exportDataBtn">Eksporter data</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card" id="downloadSection" style="display: none;">
+                <h2>Last ned data</h2>
+                <p>Din eksport er klar. Klikk på knappen nedenfor for å laste ned filen.</p>
+                <button class="btn" id="downloadBtn">Last ned datafil</button>
+            </div>
+        </section>
+
+        <section id="contactSection" class="tab-content">
+            <h1>Kontakt oss</h1>
+            <p>Har du spørsmål om dødsårsaksregisteret eller trenger du hjelp? Fyll ut skjemaet nedenfor, så vil vi ta kontakt med deg så snart som mulig.</p>
+            
+            <div class="card">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="contactName">Navn</label>
+                        <input type="text" id="contactName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactEmail">E-post</label>
+                        <input type="email" id="contactEmail" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactSubject">Emne</label>
+                        <select id="contactSubject" required>
+                            <option value="">Velg emne</option>
+                            <option value="question">Spørsmål om registrering</option>
+                            <option value="correction">Rapporter feil eller korrigering</option>
+                            <option value="tech">Teknisk støtte</option>
+                            <option value="other">Annet</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="contactMessage">Melding</label>
+                        <textarea id="contactMessage" rows="5" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="btn">Send melding</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Record list section (only visible to admins) -->
+        <section id="recordListSection" class="tab-content">
+            <h1>Registreringsoversikt</h1>
+            <p>Administrer tidligere registreringer.</p>
+            
+            <div class="visualization-toolbar">
+                <div>
+                    <label for="searchRecords">Søk:</label>
+                    <input type="text" id="searchRecords" placeholder="Søk på pasient-ID eller ICD-kode">
+                </div>
+                <button class="btn" id="searchRecordsBtn">Søk</button>
+            </div>
+            
+            <div class="loader" id="recordsLoader"></div>
+            
+            <table id="recordsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Dato</th>
+                        <th>Alder</th>
+                        <th>Kjønn</th>
+                        <th>Primær dødsårsak</th>
+                        <th>ICD-kode</th>
+                        <th>Handlinger</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Table data will be inserted here by JS -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Om Dødsårsaksregisteret</h3>
+                    <p>Dødsårsaksregisteret er en nasjonal database for registrering og analyse av dødsårsaker i Norge. Registeret bruker WHOs internasjonale klassifikasjonssystem (ICD) for koding av dødsårsaker.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Nyttige lenker</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">WHO ICD-10 kodebok</a></li>
+                        <li><a href="#">Retningslinjer for dødsårsakskoding</a></li>
+                        <li><a href="#">Folkehelseinstituttet</a></li>
+                        <li><a href="#">Helsedirektoratet</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h3>Kontakt</h3>
+                    <p>Dødsårsaksregisteret<br>
+                    Folkehelseinstituttet<br>
+                    Postboks 973 Sentrum<br>
+                    5808 Bergen</p>
+                    <p>E-post: dodsarsak@fhi.no<br>
+                    Telefon: 55 97 28 14</p>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Dødsårsaksregisteret. Alle rettigheter forbeholdt.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="index.js"></script>
+</body>
+</html>

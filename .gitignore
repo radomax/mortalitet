@@ -1,0 +1,33 @@
+# Docker volumer
+db-data/
+
+# OS-genererte filer
+.DS_Store
+Thumbs.db
+
+# IDE-filer
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Miljøfiler
+.env
+.env.local
+.env.*.local
+
+# Loggfiler
+*.log
+logs/
+
+# PHP-filer som bør ignoreres
+vendor/
+composer.lock
+
+# Sikkerhetskopier
+*.bak
+*.backup
+*.swp
+
+# Docker filer som ikke skal versjonskontrolleres
+docker-compose.override.yml
