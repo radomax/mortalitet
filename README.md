@@ -1,143 +1,47 @@
-# Mortalitet - Docker-oppsett
+# Om prosjektet 
+Mortalitet er et komplett system for standardisert registrering og analyse av dødsårsaker basert på WHOs internasjonale klassifikasjonssystem (ICD). Løsningen gir helsepersonell et effektivt digitalt verktøy for koding av dødsårsaker, som sikrer konsistent datainnsamling for folkehelseforskning og internasjonal sammenligning.
 
-Dette repoet inneholder Docker-konfigurasjon for å kjøre Mortalitet-applikasjonen med følgende komponenter:
+![image](https://github.com/user-attachments/assets/fe807be4-440f-4a67-ae3c-d61b124df3f8)
 
-- **Webapplikasjon**: Tilgjengelig på port 3011
-- **phpMyAdmin**: Tilgjengelig på port 3012 for administrasjon av databasen
-- **MySQL-database**: Kjører internt i Docker-nettverket
 
-## Forutsetninger
+# Hovedfunksjoner
 
-Før du starter, må du ha følgende programvare installert:
+Standardisert registrering av dødsårsaker med ICD-kodesystemet
+Intelligent ICD-kodesøk med automatiske forslag basert på beskrivelser
+Validering i henhold til WHOs retningslinjer for koding av dødsårsaker
+Omfattende datavisualisering med grafer og statistikk
+Eksportfunksjonalitet for videre analyse (CSV, JSON)
+Rollebasert tilgangskontroll for sikker databehandling
+Responsivt design som fungerer på alle enheter
 
-- Docker (minst versjon 19.03.0)
-- Docker Compose (minst versjon 1.27.0)
+# Teknisk implementasjon
+Systemet er bygget med moderne webteknikker og er designet for enkel integrering i eksisterende helsesystemer:
 
-## Mappestruktur
+Frontend: HTML5, CSS3, vanilla JavaScript
+Backend: PHP for API-tjenester
+Database: MySQL for pålitelig datalagring
+Docker-basert for enkel installasjon og distribusjon
+API-dokumentasjon for integrasjon med tredjeparts systemer
 
+![image](https://github.com/user-attachments/assets/eb6206e5-b7d5-4e48-940e-27a6cadc7c73)
+
+
+# Personvern og sikkerhet
+Mortalitet er utviklet med fokus på personvern og datasikkerhet i henhold til GDPR. Systemet implementerer:
+
+Kryptering av sensitive helseopplysninger
+Granulert rollestyring for tilgangskontroll
+Omfattende logging for revisjonssporing
+Sikker autentisering for alle brukere
+
+# Installasjon og oppsett
+Mortalitet kan enkelt settes opp med Docker:
 ```
-mortalitet/
-├── app/                      # Webapplikasjonens filer
-│   ├── index.html            # Hovedfilen for webapplikasjonen
-│   ├── api/                  # PHP API-endepunkter
-│   └── includes/             # PHP-filer for backend-logikk
-├── db-data/                  # Databasen lagres her (genereres automatisk)
-├── apache-config.conf        # Apache-konfigurasjon
-├── database-schema.sql       # Databaseskjema for MySQL
-├── docker-compose.yml        # Docker Compose-konfigurasjon
-├── Dockerfile.web            # Dockerfile for webserveren
-└── README.md                 # Denne filen
-```
-
-## Instruksjoner for oppsett
-
-### 1. Klone repoet
-
-```bash
-git clone [repo-url] mortalitet
+git clone https://github.com/din-organisasjon/mortalitet.git
 cd mortalitet
-```
-
-### 2. Opprett app-mappen og kopier applikasjonsfiler
-
-```bash
-mkdir -p app/api app/includes
-```
-
-- Kopier `index.html` fil til `app/`-mappen
-- Kopier eller opprett nødvendige PHP-filer i `app/api/` og `app/includes/`-mappene
-
-### 3. Start Docker-containerne
-
-```bash
 docker-compose up -d
 ```
+Applikasjonen vil være tilgjengelig på http://localhost:3011 med phpMyAdmin på http://localhost:3012 for databaseadministrasjon.
 
-Dette vil:
+![image](https://github.com/user-attachments/assets/5fca3e9c-6e2d-4045-b9d3-f6ad16107c76)
 
-1. Bygge webserver-imaget
-2. Opprette en MySQL-database
-3. Importere databaseskjemaet
-4. Starte phpMyAdmin
-5. Koble alle tjenestene sammen i et Docker-nettverk
-
-### 4. Verifiser at alt kjører
-
-- Webapplikasjon: http://localhost:3011
-- phpMyAdmin: http://localhost:3012
-  - Brukernavn: `mortalitetbruker`
-  - Passord: `mortalitetpassord`
-
-## Drift og vedlikehold
-
-### Stoppe containerne
-
-```bash
-docker-compose down
-```
-
-### Stoppe containerne og slette volumene (dette sletter databasedataene)
-
-```bash
-docker-compose down -v
-```
-
-### Se logger
-
-```bash
-# Alle containere
-docker-compose logs
-
-# Bare webserveren
-docker-compose logs web
-
-# Følg loggene kontinuerlig
-docker-compose logs -f
-```
-
-### Bygg containerne på nytt etter endringer
-
-```bash
-docker-compose build
-docker-compose up -d
-```
-
-## Sikkerhetsmerknad
-
-Dette oppsettet er konfigurert for utviklingsmiljø. For produksjonsmiljø, gjør følgende endringer:
-
-1. Endre alle databasepassord i `docker-compose.yml`
-2. Bytt ut `ENCRYPTION_KEY` i `app/includes/config.php`
-3. Konfigurer SSL/TLS for webserveren
-4. Begrens tilgang til phpMyAdmin via brannmur eller fjern den helt
-5. Implementer backup-rutiner for databasen
-
-## Database-innlogging
-
-- **Root-bruker**:
-
-  - Brukernavn: `root`
-  - Passord: `rotpassord`
-
-- **Applikasjonsbruker**:
-  - Brukernavn: `mortalitetbruker`
-  - Passord: `mortalitetpassord`
-
-## Feilsøking
-
-### Problem: Kan ikke koble til databasen
-
-- Sjekk at MySQL-containeren kjører: `docker ps`
-- Verifiser nettverkskonfigurasjon: `docker network inspect mortalitet_mortalitetnettverk`
-- Sjekk databaseloggene: `docker-compose logs db`
-
-### Problem: Webapplikasjonen viser feilmelding
-
-- Sjekk Apache-logger: `docker-compose logs web`
-- Verifiser at filene er tilgjengelige i containeren: `docker exec -it mortalitet-web ls -la /var/www/html`
-- Sjekk PHP-konfigurasjon: `docker exec -it mortalitet-web php -i`
-
-### Problem: Endringer i koden reflekteres ikke
-
-- Sjekk at volumet er riktig montert: `docker-compose config`
-- Restart web-containeren: `docker-compose restart web`
