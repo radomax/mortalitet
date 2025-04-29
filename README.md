@@ -27,17 +27,12 @@ API-dokumentasjon for integrasjon med tredjeparts systemer
 
 
 # Personvern og sikkerhet
-Mortalitet er utviklet med fokus på personvern og datasikkerhet i henhold til GDPR. Systemet implementerer:
-
-Kryptering av sensitive helseopplysninger
-Granulert rollestyring for tilgangskontroll
-Omfattende logging for revisjonssporing
-Sikker autentisering for alle brukere
+Mortalitet er utviklet med fokus på personvern og datasikkerhet i henhold til GDPR. 
 
 # Installasjon og oppsett
 Mortalitet kan enkelt settes opp med Docker:
 ```
-git clone https://github.com/din-organisasjon/mortalitet.git
+git clone https://github.com/radomax/mortalitet.git
 cd mortalitet
 docker-compose up -d
 ```
